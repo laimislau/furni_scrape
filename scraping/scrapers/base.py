@@ -12,7 +12,7 @@ class BaseScraper(ABC):
       
     @abstractmethod
     def _retrieve_items_list(self, results_count: int, keyword: str) -> List[FurnitureLink]:
-        # keywordas, tai kad galetume naudoti paieska, nu pvz paduosim "ledu tortas"
+        """Method to search recipes by keyword and save specifed number of results."""
         pass
 
     def _get_page_content(self, query: str) -> Optional[BeautifulSoup]:

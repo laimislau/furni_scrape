@@ -10,7 +10,7 @@ class Ikea(BaseScraper):
     __domain__: str = "https://www.15min.lt/"
 
     def _retrieve_items_list(self, results_count: int, keyword: str) -> List[FurnitureLink]:
-        """Function to search recipes by amount of pages and keyword."""
+        """Method to search recipes by keyword and save specifed number of results."""
         results: List[FurnitureLink] = []
                 
         for page_num in enumerate(results_count):
@@ -28,7 +28,7 @@ class Ikea(BaseScraper):
         return results
 
     def _extract_ingredients(self, content: BeautifulSoup) -> str:
-        """Function to get ingredients of the recipe."""
+        """Method to get ingredients of the recipe."""
         all_ingredients: List[Dict] = []
         
         recipe_ingredients = content.find("ul", class_="ingredients").find_all("li")
@@ -42,7 +42,7 @@ class Ikea(BaseScraper):
         return str(all_ingredients)
     
     def _extract_making_steps(self, content: BeautifulSoup) -> str:
-        """Function to get recipe's making steps."""
+        """Method to get recipe's making steps."""
         recipe_manual: List[str] = []
         recipe_making_steps = content.find("div", class_="description text").find_all("p")
 
@@ -52,7 +52,7 @@ class Ikea(BaseScraper):
         return "\n".join(recipe_manual)
 
     def _retrieve_recipe_info(self, link: FurnitureLink) -> Optional[Furniture]:
-        """Function to get main info about recipe."""
+        """Method to get main info about recipe."""
         content = self._get_page_content(link.url)
 
         if content:
