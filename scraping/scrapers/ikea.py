@@ -6,15 +6,15 @@ from bs4 import BeautifulSoup
 
 
 class Ikea(BaseScraper):
-    __items_per_page__: int = 20
-    __domain__: str = "https://www.15min.lt/"
+    __items_per_page__: int = 41 # paieskos rezultatu psl yra 40, bet +1 del puslapiu paskaiciavimo
+    __domain__: str = "https://www.ikea.lt/"
 
-    def _retrieve_items_list(self, results_count: int, keyword: str) -> List[FurnitureLink]:
-        """Method to search recipes by keyword and save specifed number of results."""
+    def _retrieve_items_links(self, results_count: int, keyword: str) -> List[FurnitureLink]:
+        """Method to search furnitures by keyword and save specifed number of results."""
         results: List[FurnitureLink] = []
                 
-        for page_num in enumerate(results_count):
-            content = self._get_page_content(f"maistas/receptai/paieska?f%5Bphrase%5D={keyword}&s={page_num}")
+        for page_num in range(1, results_count):
+            content = self._get_page_content(f"lt/search/?q={keyword}&page={page_num}")
             if content:
                 recipes_list_div = content.find("div", class_ = "recipe-list")
                 if not recipes_list_div:
@@ -68,11 +68,14 @@ class Ikea(BaseScraper):
                 main_recipe_image = None
 
             return Furniture(
-                recipe_title = recipe_title,
-                recipe_image_link = main_recipe_image,
-                recipe_amount = recipe_amount,
+                furniture_name = recipe_title,
+                furniture_description = main_recipe_image,
+                furniture_price = recipe_amount,
+                furniture_image_links = List[str],
+                furniture_stock_in_store = int,
+                furniture_key_features = str,
                 ingredients = self._extract_ingredients(content),
-                making_steps = self._extract_making_steps(content),
+                making_steps = self._extract_making_steps(content)
             )
         else:
             return None

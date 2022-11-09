@@ -11,8 +11,8 @@ class BaseScraper(ABC):
     __domain__: str = ""
       
     @abstractmethod
-    def _retrieve_items_list(self, results_count: int, keyword: str) -> List[FurnitureLink]:
-        """Method to search recipes by keyword and save specifed number of results."""
+    def _retrieve_items_links(self, results_count: int, keyword: str) -> List[FurnitureLink]:
+        """Method to get items links searching by keyword and save specifed number of results."""
         pass
 
     def _get_page_content(self, query: str) -> Optional[BeautifulSoup]:
@@ -20,7 +20,7 @@ class BaseScraper(ABC):
         resp = requests.get(f"{self.__domain__}/{query}")
         if resp.status_code == 200:
             return BeautifulSoup(resp.content)
-        raise Exception("Cannot reach content!")
+        raise Exception("Cannot get content. Site is unreachable.")
 
     def _retrieve_recipe_info(self, link: FurnitureLink) -> Optional[Furniture]:
         pass
