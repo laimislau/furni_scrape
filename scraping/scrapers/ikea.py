@@ -6,16 +6,16 @@ from bs4 import BeautifulSoup
 
 
 class Ikea(BaseScraper):
-    __items_per_page__: int = 41 # paieskos rezultatu psl yra 40, bet +1 del puslapiu paskaiciavimo
-    __domain__: str = "https://www.ikea.lt/"
+    __items_per_page__: int = 40
+    __domain__: str = "https://www.ikea.lt"
 
     def _retrieve_items_links(self, results_count: int, keyword: str) -> List[FurnitureLink]:
         """Method to search furnitures by keyword and save specifed number of results."""
         results: List[FurnitureLink] = []        
-        pages_to_iterate: int = (results_count // __items_per_page__) + 1 # kiek paieskos rezultatu puslapiu naudoti        
+        pages_to_iterate: int = (results_count // self.__items_per_page__) + 1 # kiek paieskos rezultatu puslapiu naudoti        
         
         for page_num in range(1, pages_to_iterate + 1):
-            content = self._get_page_content(f"lt/search/?q={keyword}&page={page_num}")
+            content = self._get_page_content(f"/lt/search/?q={keyword}&page={page_num}")
             max_number_of_pages = int(content.find("ul", class_="pagination mb-0").find_all("li", class_="page-item")[3].text)
             
             if content:
@@ -25,7 +25,7 @@ class Ikea(BaseScraper):
                                                                         
                     for item in all_items_per_page:
                         link = item.find("div", class_="itemInfo").a.get("href")
-                        item = f"https://www.ikea.lt{link}"                  
+                        item = f"{self.__domain__}{link}"                  
                                         
                         while results_count >= counter:          
                             results.append(FurnitureLink(url = item))
@@ -40,7 +40,7 @@ class Ikea(BaseScraper):
 
 
 
-
+    # _extract_ingredients
     def _extract_ingredients(self, content: BeautifulSoup) -> str:
         """Method to get ingredients of the recipe."""
         all_ingredients: List[Dict] = []
@@ -65,6 +65,10 @@ class Ikea(BaseScraper):
             recipe_manual.append(step_to_txt)    
         return "\n".join(recipe_manual)
 
+
+
+
+    #_retrieve_recipe_info
     def _retrieve_recipe_info(self, link: FurnitureLink) -> Optional[Furniture]:
         """Method to get main info about recipe."""
         content = self._get_page_content(link.url)
@@ -85,9 +89,11 @@ class Ikea(BaseScraper):
                 furniture_name = recipe_title,
                 furniture_description = main_recipe_image,
                 furniture_price = recipe_amount,
-                furniture_image_links = List[str],
+                furniture_image_link = List[str],
                 furniture_stock_in_store = int,
                 furniture_key_features = str,
+                furniture_care_instructions = str,
+
                 ingredients = self._extract_ingredients(content),
                 making_steps = self._extract_making_steps(content)
             )
