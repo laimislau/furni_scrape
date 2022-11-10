@@ -11,21 +11,35 @@ class Ikea(BaseScraper):
 
     def _retrieve_items_links(self, results_count: int, keyword: str) -> List[FurnitureLink]:
         """Method to search furnitures by keyword and save specifed number of results."""
-        results: List[FurnitureLink] = []
-                
-        for page_num in range(1, results_count):
+        results: List[FurnitureLink] = []        
+        pages_to_iterate: int = (results_count // __items_per_page__) + 1 # kiek paieskos rezultatu puslapiu naudoti        
+        
+        for page_num in range(1, pages_to_iterate + 1):
             content = self._get_page_content(f"lt/search/?q={keyword}&page={page_num}")
+            max_number_of_pages = int(content.find("ul", class_="pagination mb-0").find_all("li", class_="page-item")[3].text)
+            
             if content:
-                recipes_list_div = content.find("div", class_ = "recipe-list")
-                if not recipes_list_div:
-                    break  
-            # aprasome html koses elementa is kurios surinksim info
-            all_recipe_divs = recipes_list_div.find_all("div", class_="list-row")        
-            for recipe_div in all_recipe_divs:                
-                recipe_link = recipe_div.find("a").get("href")
-                results.append(FurnitureLink(url = recipe_link))
+                if max_number_of_pages >= pages_to_iterate:                        
+                    all_items_per_page = content.find_all("div", class_="col-6 col-md-4 col-lg-3 p-0 itemBlock")
+                    counter = 1
+                                                                        
+                    for item in all_items_per_page:
+                        link = item.find("div", class_="itemInfo").a.get("href")
+                        item = f"https://www.ikea.lt{link}"                  
+                                        
+                        while results_count >= counter:          
+                            results.append(FurnitureLink(url = item))
+                            counter += 1
+                else: 
+                    print(f"Search does not contain {results_count} results.")
+                    break
+            if not content:
+                break
 
         return results
+
+
+
 
     def _extract_ingredients(self, content: BeautifulSoup) -> str:
         """Method to get ingredients of the recipe."""
