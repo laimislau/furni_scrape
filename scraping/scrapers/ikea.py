@@ -21,7 +21,7 @@ class Ikea(BaseScraper):
             
             if pages_count != None:
                 max_number_of_pages = int(content.find("ul", class_="pagination mb-0").find_all("li", class_="page-item")[3].text)
-            elif no_results == "Rezultatų nerasta":
+            elif no_results != None:           
                 max_number_of_pages = 0
             else:
                 max_number_of_pages = 1
