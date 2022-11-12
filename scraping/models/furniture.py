@@ -6,10 +6,11 @@ class Furniture(BaseModel):
     furniture_name: str
     furniture_description: str
     furniture_price = int
-    furniture_image_link: List[str]
-
-    furniture_stock_in_store: int
-    furniture_key_features: str    
+    furniture_image_link: List[str]    
+    furniture_key_features: str
+    furniture_size: str
+    
+    furniture_stock_in_store: int    
     
 
 class FurnitureLink(BaseModel):

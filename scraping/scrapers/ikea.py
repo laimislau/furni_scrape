@@ -16,22 +16,29 @@ class Ikea(BaseScraper):
         
         for page_num in range(1, pages_to_iterate + 1):
             content = self._get_page_content(f"/lt/search/?q={keyword}&page={page_num}")
-            max_number_of_pages = int(content.find("ul", class_="pagination mb-0").find_all("li", class_="page-item")[3].text)
+            pages_count = content.find("ul", class_="pagination mb-0")
+            no_results = content.find("div", class_="col mt-4").h3.text
             
+            if pages_count != None:
+                max_number_of_pages = int(content.find("ul", class_="pagination mb-0").find_all("li", class_="page-item")[3].text)
+            elif no_results == "Rezultatų nerasta":
+                max_number_of_pages = 0
+            else:
+                max_number_of_pages = 1
+
             if content:
                 if max_number_of_pages >= pages_to_iterate:                        
                     all_items_per_page = content.find_all("div", class_="col-6 col-md-4 col-lg-3 p-0 itemBlock")
                     counter = 1
-                                                                        
-                    for item in all_items_per_page:
-                        link = item.find("div", class_="itemInfo").a.get("href")
-                        item = f"{self.__domain__}{link}"                  
-                                        
-                        while results_count >= counter:          
+
+                    while results_count >= counter:                                                 
+                        for item in all_items_per_page:
+                            link = item.find("div", class_="itemInfo").a.get("href")
+                            item = f"{self.__domain__}{link}"                                 
                             results.append(FurnitureLink(url = item))
                             counter += 1
                 else: 
-                    print(f"Search does not contain {results_count} results.")
+                    print(f"Search has less results than requested.")
                     break
             if not content:
                 break
@@ -39,21 +46,15 @@ class Ikea(BaseScraper):
         return results
 
 
-
-    # _extract_ingredients
-    def _extract_ingredients(self, content: BeautifulSoup) -> str:
-        """Method to get ingredients of the recipe."""
-        all_ingredients: List[Dict] = []
+    def _get_key_features(self, content: BeautifulSoup) -> str:  
+        results: List[str] = []   
+        features = content.find("div", class_="tab-pane_box").find_all("p")
         
-        recipe_ingredients = content.find("ul", class_="ingredients").find_all("li")
-        for ingredient in recipe_ingredients:
-            ingredient_span = ingredient.find_all("span")
-            all_ingredients.append({
-                "ingredient_name": ingredient_span[0].text.strip(),
-                "ingredient_amount": ingredient_span[2].text.strip(),
-                "ingredient_note": ingredient_span[3].text.strip()
-            })
-        return str(all_ingredients)
+        for feature in features: 
+            feature_line = feature.text.strip()
+            results.append(feature_line)       
+            
+        return results
     
     def _extract_making_steps(self, content: BeautifulSoup) -> str:
         """Method to get recipe's making steps."""
