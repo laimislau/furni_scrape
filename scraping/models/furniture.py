@@ -10,8 +10,6 @@ class Furniture(BaseModel):
     furniture_key_features: str
     furniture_size: str
     
-    furniture_stock_in_store: int    
-    
-
+    #furniture_stock_in_store: int    
 class FurnitureLink(BaseModel):
     url: str

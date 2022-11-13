@@ -9,15 +9,15 @@ class Ikea(BaseScraper):
     __items_per_page__: int = 40
     __domain__: str = "https://www.ikea.lt"
 
-    def _retrieve_items_links(self, results_count: int, keyword: str) -> List[FurnitureLink]:
+    def _retrieve_item_links(self, results_count: int, keyword: str) -> List[FurnitureLink]:
         """Method to search furnitures by keyword and save specifed number of results."""
         results: List[FurnitureLink] = []        
         pages_to_iterate: int = (results_count // self.__items_per_page__) + 1 # kiek paieskos rezultatu puslapiu naudoti        
         
         for page_num in range(1, pages_to_iterate + 1):
-            content = self._get_page_content(f"/lt/search/?q={keyword}&page={page_num}")
+            content = self._get_page_content(f"{self.__domain__}/lt/search/?q={keyword}&page={page_num}")
             pages_count = content.find("ul", class_="pagination mb-0")
-            no_results = content.find("div", class_="col mt-4").h3.text
+            no_results = content.find("div", class_="col mt-4")
             
             if pages_count != None:
                 max_number_of_pages = int(content.find("ul", class_="pagination mb-0").find_all("li", class_="page-item")[3].text)
@@ -46,7 +46,8 @@ class Ikea(BaseScraper):
         return results
 
 
-    def _get_key_features(self, content: BeautifulSoup) -> str:  
+    def _extract_key_features(self, content: BeautifulSoup) -> str:
+        """Method to key features of furiniture.""" 
         results: List[str] = []   
         features = content.find("div", class_="tab-pane_box").find_all("p")
         
@@ -56,47 +57,42 @@ class Ikea(BaseScraper):
             
         return results
     
-    def _extract_making_steps(self, content: BeautifulSoup) -> str:
-        """Method to get recipe's making steps."""
-        recipe_manual: List[str] = []
-        recipe_making_steps = content.find("div", class_="description text").find_all("p")
-
-        for step in recipe_making_steps:
-            step_to_txt = step.text.strip()
-            recipe_manual.append(step_to_txt)    
-        return "\n".join(recipe_manual)
-
+    def _extract_furniture_size(self, content: BeautifulSoup) -> str: 
+        results: List[str] = []
+        measures = content.find_all("div", class_="tab-pane_box")[1].find_all("tr")
+        
+        for measure in measures:
+            measure_line = measure.text.strip()
+            results.append(measure_line)
+        return results
 
 
-
-    #_retrieve_recipe_info
-    def _retrieve_recipe_info(self, link: FurnitureLink) -> Optional[Furniture]:
-        """Method to get main info about recipe."""
+    def _retrieve_furniture_info(self, link: FurnitureLink) -> Optional[Furniture]: 
+        """Method to get main info about furniture."""
         content = self._get_page_content(link.url)
 
         if content:
             try:
-                recipe_title = content.find("h3").text.strip().split('\n')[0]
-                recipe_amount = content.find("span").text
+                furniture_name = content.find("div", class_="d-flex align-items-center flex-wrap").h3.text
+                furniture_description = content.find("h4", class_="itemFacts font-weight-normal").span.text
+                furniture_price = int(content.find("div", class_="itemPrice-wrapper").p.span.text.replace(" €", ""))
             except AttributeError:
                 return None
 
             try:
-                main_recipe_image = content.find("div", class_ = "badge-layers-holder").find("img").get("src")
+                furniture_image_link = content.find("a", class_ = "slideImg").find("img").get("src")
             except KeyError:
-                main_recipe_image = None
+                furniture_image_link = None
 
             return Furniture(
-                furniture_name = recipe_title,
-                furniture_description = main_recipe_image,
-                furniture_price = recipe_amount,
-                furniture_image_link = List[str],
-                furniture_stock_in_store = int,
-                furniture_key_features = str,
-                furniture_care_instructions = str,
+                furniture_name = furniture_name,
+                furniture_description = furniture_description,
+                furniture_price = furniture_price,
+                furniture_image_link = furniture_image_link,
+                furniture_key_features = self._extract_key_features(content), 
+                furniture_size = self._extract_furniture_size(content), 
 
-                ingredients = self._extract_ingredients(content),
-                making_steps = self._extract_making_steps(content)
+                #furniture_stock_in_store = int,                
             )
         else:
             return None
