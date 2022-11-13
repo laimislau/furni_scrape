@@ -55,7 +55,7 @@ class Ikea(BaseScraper):
             feature_line = feature.text.strip()
             results.append(feature_line)       
             
-        return results
+        return str(results)
     
     def _extract_furniture_size(self, content: BeautifulSoup) -> str: 
         results: List[str] = []
@@ -64,7 +64,7 @@ class Ikea(BaseScraper):
         for measure in measures:
             measure_line = measure.text.strip()
             results.append(measure_line)
-        return results
+        return str(results)
 
 
     def _retrieve_furniture_info(self, link: FurnitureLink) -> Optional[Furniture]: 
