@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 import math
 from bs4 import BeautifulSoup
 import requests
+from tqdm import tqdm
 
 # abstrakti klase - ja inicializuoti nera logiska, tik paveldeti
 class BaseScraper(ABC):
@@ -19,7 +20,7 @@ class BaseScraper(ABC):
         """Method to get needed content from search result page or whatever related page."""
         resp = requests.get(query)
         if resp.status_code == 200:
-            return BeautifulSoup(resp.content)
+            return BeautifulSoup(resp.content, features="html.parser")
         raise Exception("Cannot get content. Site is unreachable.")
 
     def _retrieve_furniture_info(self, link: FurnitureLink) -> Optional[Furniture]:
@@ -32,7 +33,7 @@ class BaseScraper(ABC):
             raise Exception("Forgot to set how many items is displayed per page.")
         furniture_links = self._retrieve_item_links(pages_count, keyword)
         scraped_recipes: List[Furniture] = []
-        for recipe_link in furniture_links:
+        for recipe_link in tqdm(furniture_links):
             scraped_recipe = self._retrieve_furniture_info(recipe_link)
             if scraped_recipe is not None:
                 scraped_recipes.append(scraped_recipe)
