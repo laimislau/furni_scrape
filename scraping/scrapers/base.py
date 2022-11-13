@@ -30,7 +30,7 @@ class BaseScraper(ABC):
             pages_count = math.ceil(results_count / self.__items_per_page__)
         except ZeroDivisionError:
             raise Exception("Forgot to set how many items is displayed per page.")
-        furniture_links = self._retrieve_item_links(results_count, keyword)
+        furniture_links = self._retrieve_item_links(pages_count, keyword)
         scraped_recipes: List[Furniture] = []
         for recipe_link in furniture_links:
             scraped_recipe = self._retrieve_furniture_info(recipe_link)
