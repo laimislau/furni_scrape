@@ -1,0 +1,4 @@
+python
+from scraping import scraper
+f = scraper.Scraper()
+f.scrape(3, "sofa", ["ikea"])
