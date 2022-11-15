@@ -6,13 +6,13 @@ from bs4 import BeautifulSoup
 
 
 class Ikea(BaseScraper):
-    __items_per_page__: int = 40
+    __items_per_page__: int = 10
     __domain__: str = "https://www.ikea.lt"
 
     def _retrieve_item_links(self, results_count: int, keyword: str) -> List[FurnitureLink]:
         """Method to search furnitures by keyword and save specifed number of results."""
         results: List[FurnitureLink] = []        
-        pages_to_iterate: int = (results_count // self.__items_per_page__) + 1 # kiek paieskos rezultatu puslapiu naudoti        
+        pages_to_iterate = (results_count // self.__items_per_page__) + 1 # kiek paieskos rezultatu puslapiu naudoti        
         
         for page_num in range(1, pages_to_iterate + 1):
             content = self._get_page_content(f"{self.__domain__}/lt/search/?q={keyword}&page={page_num}")
@@ -75,7 +75,7 @@ class Ikea(BaseScraper):
             try:
                 furniture_name = content.find("div", class_="d-flex align-items-center flex-wrap").h3.text
                 furniture_description = content.find("h4", class_="itemFacts font-weight-normal").span.text
-                furniture_price = int(content.find("div", class_="itemPrice-wrapper").p.span.text.replace(" €", ""))
+                furniture_price = content.find("div", class_="itemPrice-wrapper").p.span.text.replace(" €", "")
             except AttributeError:
                 return None
 

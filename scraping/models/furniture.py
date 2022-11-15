@@ -5,7 +5,7 @@ class Furniture(BaseModel):
     """Class for base properties of furniture"""
     furniture_name: str
     furniture_description: str
-    furniture_price = int
+    furniture_price: str
     furniture_image_link: str
     furniture_key_features: str
     furniture_size: str
