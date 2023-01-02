@@ -1,7 +1,7 @@
 use nordpool;
 create table HourlyPricesLT (
 	lt_id int NOT NULL auto_increment,    
-    date_of_price date,
+    date_of_price date UNIQUE,
     time_00_01 float,
     time_01_02 float,
     time_02_03 float,
